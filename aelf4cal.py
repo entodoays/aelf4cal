@@ -1,7 +1,11 @@
 #!/bin/python3
-import datetime, os, re, urllib.request, html.parser
+import datetime, os, re, urllib.request, html.parser, locale, sys
 from bs4 import BeautifulSoup
 from os.path import expanduser
+if sys.platform == "win32":
+        locale.setlocale(locale.LC_ALL, 'fra')
+else:
+        locale.setlocale(locale.LC_ALL, 'fr_FR.utf8')
 home = expanduser("~")
 now = datetime.datetime.now()#Get today's date
 os.chdir(home)
@@ -15,7 +19,7 @@ else:
 	idx = 0
 print (idx)
 Base_date = now - datetime.timedelta(idx) #Get last Sunday's date
-print('Création du dossier %s sur le Bureau\nLe programme téléchargera les textes pour 9 semaines à partir de dimanche dernier.\n À la fin, ajoutez le ficher index.html en Calibre.\n' % Base_folder)
+print('Création du dossier %s sur le Bureau\nLe programme téléchargera les textes pour 9 semaines.\nÀ la fin, ajoutez le ficher index.html en Calibre.\n' % Base_folder)
 next_date = Base_date
 main_index = """
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -69,9 +73,11 @@ for i in range(1, 64):
         soup = BeautifulSoup(html_doc)
         ordo_text = soup.find("div", {"class": "bloc"})
         text_file = open("index.html", "w", encoding='utf-8')
-        for hidden in ordo_text.find_all(id='maBulle'):
+        for hidden in ordo_text.find_all("div", {"class": "date"}):
                 hidden.decompose()
         for hidden in ordo_text.find_all('img'):
+                hidden.decompose()
+        for hidden in ordo_text.find_all(id='maBulle'):
                 hidden.decompose()
         part1 = """
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -82,7 +88,7 @@ for i in range(1, 64):
         <body>
         """
         part3 = """
-        <div style="text-align: center; font-size:150%; line-height:150%"><a href="0_Messe.html">Messe</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+        <div style="text-align: center; font-size:130%; line-height:150%"><a href="0_Messe.html">Messe</a>&nbsp;&nbsp;|&nbsp;&nbsp;
         <a href="1_Laudes.html">Laudes</a>&nbsp;&nbsp;|&nbsp;&nbsp;
         <a href="2_Lectures.html">Lectures</a>&nbsp;&nbsp;|&nbsp;&nbsp;
         <a href="3_Tierce.html">Tierce</a>&nbsp;&nbsp;|&nbsp;&nbsp;
@@ -92,7 +98,7 @@ for i in range(1, 64):
         <a href="7_Complies.html">Complies</a>
         <br><br>
         </div>
-        <div style="text-align: center; font-size:150%;"><a href="../index.html">Retour</a></div></body>
+        <div style="text-align: center; font-size:130%;"><a href="../index.html">Retour</a></div></body>
         </html>
         """
         joined = "%s<h2>%s</h2>%s%s" % (part1, site_date, ordo_text, part3)
@@ -104,12 +110,23 @@ for i in range(1, 64):
                         with open(filename, 'rb') as messy:
                                 soup = BeautifulSoup(messy)
                         messy.close()
+                        while True:
+                            h2 = soup.find('h2')
+                            if not h2:
+                                break
+                            h2.name = 'h3'
                         for remove in soup.find_all(attrs={'class':['clr', 'goTop', 'print_only', 'change_country', 'abonnement', 'current', 'bloc', 'degre', 'base']}):
                                 remove.decompose()
                         for remove in soup.find_all(id=['bas', 'menuHorizontal', 'colonneDroite', 'colonneGauche', 'font-resize', 'print_link', 'titre']):
                                 remove.decompose()
+                        for remove in soup.find_all('script'):
+                                remove.decompose()
+                        for remove in soup.find_all('link', attrs={'rel':'shortcut icon'}):
+                                remove.decompose()
+                        for remove in soup.find_all('link', attrs={'rel':'rss feed'}):
+                                remove.decompose()
                         cleaned = str(soup)
-                        with_retour = re.sub(r'<!--Fin div contenu-->', r'<div style="text-align: center; font-size:150%; line-height:150%"><a href="index.html">Retour</a></div>', cleaned)
+                        with_retour = re.sub(r'<!--Fin div contenu-->', r'<div style="text-align: center; font-size:130%; line-height:150%"><a href="index.html">Retour</a></div>', cleaned)
                         output_file = open(filename, "w", encoding='utf-8')
                         output_file.write(with_retour)
         # Go to parent folder and add 1 day
