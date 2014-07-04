@@ -14,10 +14,9 @@ Base_folder = r'Breviaire_%s-%s-%s' % (now.strftime("%d"), now.strftime("%m"), n
 if not os.path.exists(Base_folder): os.makedirs(Base_folder) #Create a folder with today's date
 os.chdir(Base_folder) #Go to the freshly created folder
 if now.weekday() != 6:
-	idx = (now.weekday() + 1)
+    idx = (now.weekday() + 1)
 else:
-	idx = 0
-print (idx)
+    idx = 0
 Base_date = now - datetime.timedelta(idx) #Get last Sunday's date
 print('Création du dossier %s sur le Bureau\nLe programme téléchargera les textes pour 9 semaines.\nÀ la fin, ajoutez le ficher index.html en Calibre.\n' % Base_folder)
 next_date = Base_date
@@ -125,6 +124,10 @@ for i in range(1, 64):
                                 remove.decompose()
                         for remove in soup.find_all('link', attrs={'rel':'rss feed'}):
                                 remove.decompose()
+                        for tag in soup.find_all('font', attrs={'size':'2'}):
+                            del tag['size']
+                        for tag in soup.find_all('font'):
+                            del tag['face']
                         cleaned = str(soup)
                         with_retour = re.sub(r'<!--Fin div contenu-->', r'<div style="text-align: center; font-size:130%; line-height:150%"><a href="index.html">Retour</a></div>', cleaned)
                         output_file = open(filename, "w", encoding='utf-8')
