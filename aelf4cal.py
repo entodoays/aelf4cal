@@ -33,7 +33,7 @@ main_index = """
 		<div>
 		<h1>Liturgie des Heures</h1>
 		</div>
-		<div style="line-height: 150%;">
+		<div style="line-height:180%; text-align: center; font-size:110%;">
 		<p>
 		"""
 def aelf_unescape(link,filename):
@@ -68,7 +68,7 @@ for i in range(1, 64):
 		complies_link = "http://www.aelf.org/office-complies?desktop=1&date_my=%s" % (site_date)
 		aelf_unescape(complies_link,'7_Complies.html')
 		html_doc = urllib.request.urlopen(next_link).read()
-		#Extract ordo
+		#Extract ordo and create day index file
 		soup = BeautifulSoup(html_doc)
 		ordo_text = soup.find("div", {"class": "bloc"})
 		text_file = open("index.html", "w", encoding='utf-8')
@@ -97,10 +97,21 @@ for i in range(1, 64):
 		<a href="7_Complies.html">Complies</a>
 		<br><br>
 		</div>
-		<div style="text-align: center; font-size:130%;"><a href="../index.html">Retour</a></div></body>
-		</html>
+		<div style="text-align: center; font-size:130%;">
 		"""
-		joined = "%s<h2>%s</h2>%s%s" % (part1, site_date, ordo_text, part3)
+		if i != 1:
+			hier = next_date + datetime.timedelta(days=-1)
+			part4 = "<a href=\"../" + str(r'%s-%s-%s' % (hier.strftime("%y"), hier.strftime("%m"), hier.strftime("%d"))) + "/index.html\">Jour-</a>&nbsp;&nbsp;<a href=\"../index.html\">Retour</a>"
+		else:
+			part4 = """
+		<a href="../index.html">Retour</a>
+		"""
+		if i != 63:
+			demain = next_date + datetime.timedelta(days=1)
+			part5 = "&nbsp;&nbsp;<a href=\"../" + str(r'%s-%s-%s' % (demain.strftime("%y"), demain.strftime("%m"), demain.strftime("%d"))) + "/index.html\">Jour+</a></div></body>"
+		else:
+			part5 = "</div></body></html>"
+		joined = "%s<h2>%s</h2>%s%s%s%s" % (part1, site_date, ordo_text, part3, part4, part5)
 		text_file.write(joined)
 		text_file.close()
 		#Clean pages
@@ -142,7 +153,7 @@ for i in range(1, 64):
 		if next_date.weekday() == 6:
 				date_link = '</p><p><b><a href="%s/index.html">%s-%s</a></b>&nbsp; |&nbsp; ' % (next_folder, next_date.strftime("%d"), next_date.strftime("%m")) #Add link to main index
 		else:
-				date_link = '<a href="%s/index.html">%s-%s</a>&nbsp; |&nbsp; ' % (next_folder, next_date.strftime("%d"), next_date.strftime("%m")) #Add link to main index
+				date_link = '<a href="%s/index.html">%s</a>&nbsp; |&nbsp; ' % (next_folder, next_date.strftime("%d")) #Add link to main index
 		main_index = main_index + date_link
 		next_date = Base_date + datetime.timedelta(days=i)
 #Close main index file
