@@ -18,7 +18,7 @@ if now.weekday() != 6:
 else:
 	idx = 0
 Base_date = now - datetime.timedelta(idx) #Get last Sunday's date
-print('Création du dossier %s sur le Bureau\nLe programme téléchargera les textes pour 9 semaines.\nÀ la fin, ajoutez le ficher index.html en Calibre.\n' % Base_folder)
+print('Création du dossier %s sur le Bureau\nLe programme téléchargera les textes pour 8 semaines.\nÀ la fin, ajoutez le ficher index.html en Calibre.\n' % Base_folder)
 next_date = Base_date
 main_index = """
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -33,19 +33,19 @@ main_index = """
 		<div>
 		<h1>Liturgie des Heures</h1>
 		</div>
-		<div style="line-height:180%; text-align: center; font-size:110%;">
-		<p>
+		<div style="line-height:150%; text-align: center;">
 		"""
 def aelf_unescape(link,filename):
-		"""h = html.parser.HTMLParser()
-		with urllib.request.urlopen(link) as fin, open(filename, 'w', encoding='utf-8') as fout:
-				for line in fin:
-						fout.write(h.unescape(line.decode('utf-8')))
-		fout.close()"""
-		urllib.request.urlretrieve(link, filename=filename)
+		try: 
+			html_heure = urllib.request.urlopen(link).read()
+			html_heure = html_heure.decode('utf-8')
+			output_file = open(filename, "w", encoding='utf-8')
+			output_file.write(str(html_heure))
+		except urllib.error.URLError as e:
+			print(e.reason)
 		return
-#Download the files for 9 weeks
-for i in range(1, 64):   
+#Download the files for 8 weeks
+for i in range(1, 57):   
 		print ('Téléchargement des textes de %s-%s-%s...' % (next_date.strftime("%d"), next_date.strftime("%m"), next_date.strftime("%y")))
 		next_folder = r'%s-%s-%s' % (next_date.strftime("%y"), next_date.strftime("%m"), next_date.strftime("%d"))
 		if not os.path.exists(next_folder): os.makedirs(next_folder)
@@ -67,7 +67,11 @@ for i in range(1, 64):
 		aelf_unescape(vepres_link,'6_Vepres.html')
 		complies_link = "http://www.aelf.org/office-complies?desktop=1&date_my=%s" % (site_date)
 		aelf_unescape(complies_link,'7_Complies.html')
-		html_doc = urllib.request.urlopen(next_link).read()
+		try: 
+			html_doc = urllib.request.urlopen(next_link).read()
+			html_doc = html_doc.decode('utf-8')
+		except urllib.error.URLError as e:
+			print(e.reason)
 		#Extract ordo and create day index file
 		soup = BeautifulSoup(html_doc)
 		ordo_text = soup.find("div", {"class": "bloc"})
@@ -146,19 +150,21 @@ for i in range(1, 64):
 							del tag['face']
 						cleaned = str(soup)
 						with_retour = re.sub(r'<!--Fin div contenu-->', r'<div style="text-align: center; font-size:130%; line-height:150%"><a href="index.html">Retour</a></div>', cleaned)
+						with_retour = re.sub(r'(</br>){2,}', r'<br>', with_retour) #Remove extra blank lines
 						output_file = open(filename, "w", encoding='utf-8')
 						output_file.write(with_retour)
 		# Go to parent folder and add 1 day
 		os.chdir("..")
 		if next_date.weekday() == 6:
-				date_link = '</p><p><b><a href="%s/index.html">%s-%s</a></b>&nbsp; |&nbsp; ' % (next_folder, next_date.strftime("%d"), next_date.strftime("%m")) #Add link to main index
+				date_link = '<br><b><a href="%s/index.html">%s-%s</a></b>&nbsp; |&nbsp; ' % (next_folder, next_date.strftime("%d"), next_date.strftime("%m")) #Add link to main index
 		else:
 				date_link = '<a href="%s/index.html">%s</a>&nbsp; |&nbsp; ' % (next_folder, next_date.strftime("%d")) #Add link to main index
 		main_index = main_index + date_link
 		next_date = Base_date + datetime.timedelta(days=i)
 #Close main index file
 print('\nPréparation de l\'index (à ajouter à Calibre)')
-main_index = main_index + '</p></div><div>© AELF</div></body></html>'
+main_index = main_index + '</div><div>© AELF</div></body></html>'
 text_file = open("index.html", "w", encoding='utf-8')
 text_file.write(main_index)
 text_file.close()
+
