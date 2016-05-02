@@ -20,6 +20,8 @@ else:
 Base_date = now - datetime.timedelta(idx) #Get last Sunday's date
 print('Création du dossier %s sur le Bureau\nLe programme téléchargera les textes pour 8 semaines.\nÀ la fin, ajoutez le ficher index.html en Calibre.\n' % Base_folder)
 next_date = Base_date
+user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.75 Safari/537.36'
+headers={'User-Agent':user_agent,} 
 main_index = """
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 		<html xmlns="http://www.w3.org/1999/xhtml">
@@ -37,7 +39,9 @@ main_index = """
 		"""
 def aelf_unescape(link,filename):
 		try: 
-			html_heure = urllib.request.urlopen(link).read()
+			request=urllib.request.Request(link,None,headers) #The assembled request
+			response = urllib.request.urlopen(request)
+			html_heure = response.read()
 			html_heure = html_heure.decode('utf-8')
 			output_file = open(filename, "w", encoding='utf-8')
 			output_file.write(str(html_heure))
@@ -68,12 +72,14 @@ for i in range(1, 57):
 		complies_link = "http://www.aelf.org/office-complies?desktop=1&date_my=%s" % (site_date)
 		aelf_unescape(complies_link,'7_Complies.html')
 		try: 
-			html_doc = urllib.request.urlopen(next_link).read()
+			request=urllib.request.Request(next_link,None,headers) #The assembled request
+			response = urllib.request.urlopen(request)
+			html_doc = response.read()
 			html_doc = html_doc.decode('utf-8')
 		except urllib.error.URLError as e:
 			print(e.reason)
 		#Extract ordo and create day index file
-		soup = BeautifulSoup(html_doc)
+		soup = BeautifulSoup(html_doc, "lxml")
 		ordo_text = soup.find("div", {"class": "bloc"})
 		text_file = open("index.html", "w", encoding='utf-8')
 		for hidden in ordo_text.find_all("div", {"class": "date"}):
@@ -122,7 +128,7 @@ for i in range(1, 57):
 		for filename in os.listdir('.'):
 				if re.match(r'\d.*', filename):
 						with open(filename, 'rb') as messy:
-								soup = BeautifulSoup(messy)
+								soup = BeautifulSoup(messy, "lxml")
 						messy.close()
 						while True:
 							h2 = soup.find('h2')
@@ -150,7 +156,7 @@ for i in range(1, 57):
 							del tag['face']
 						cleaned = str(soup)
 						with_retour = re.sub(r'<!--Fin div contenu-->', r'<div style="text-align: center; font-size:130%; line-height:150%"><a href="index.html">Retour</a></div>', cleaned)
-						with_retour = re.sub(r'(</br>){2,}', r'<br>', with_retour) #Remove extra blank lines
+						with_retour = re.sub(r'(</br>){2,}', r'\n <p>&nbsp;</p> \n', with_retour) #Remove extra blank lines
 						output_file = open(filename, "w", encoding='utf-8')
 						output_file.write(with_retour)
 		# Go to parent folder and add 1 day
@@ -167,4 +173,3 @@ main_index = main_index + '</div><div>© AELF</div></body></html>'
 text_file = open("index.html", "w", encoding='utf-8')
 text_file.write(main_index)
 text_file.close()
-
