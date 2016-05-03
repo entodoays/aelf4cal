@@ -155,7 +155,7 @@ for i in range(1, 57):
 						for tag in soup.find_all('font'):
 							del tag['face']
 						cleaned = str(soup)
-						with_retour = re.sub(r'<!--Fin div contenu-->', r'<div style="text-align: center; font-size:130%; line-height:150%"><a href="index.html">Retour</a></div>', cleaned)
+						with_retour = re.sub(r'</body>', r'<div style="text-align: center; font-size:130%; line-height:150%"><a href="index.html">Retour</a></div></body>', cleaned)
 						with_retour = re.sub(r'(</br>){2,}', r'\n <p>&nbsp;</p> \n', with_retour) #Remove extra blank lines
 						output_file = open(filename, "w", encoding='utf-8')
 						output_file.write(with_retour)
