@@ -54,22 +54,22 @@ for i in range(1, 57):
 		next_folder = r'%s-%s-%s' % (next_date.strftime("%y"), next_date.strftime("%m"), next_date.strftime("%d"))
 		if not os.path.exists(next_folder): os.makedirs(next_folder)
 		os.chdir(next_folder)
-		site_date = "%s/%s/%s" % (next_date.day, next_date.month, next_date.year)
-		next_link = "http://www.aelf.org/office-messe?desktop=1&date_my=%s" % (site_date)
+		site_date = "%s-%s-%s" % (next_date.year, next_date.strftime("%m"), next_date.strftime("%d"))
+		next_link = "http://www.aelf.org/%s/romain/messe" % (site_date)
 		aelf_unescape(next_link,'0_Messe.html')
-		laudes_link = "http://www.aelf.org/office-laudes?desktop=1&date_my=%s" % (site_date)
+		laudes_link = "http://www.aelf.org/%s/romain/laudes" % (site_date)
 		aelf_unescape(laudes_link,'1_Laudes.html')
-		lectures_link = "http://www.aelf.org/office-lectures?desktop=1&date_my=%s" % (site_date)
+		lectures_link = "http://www.aelf.org/%s/romain/lectures" % (site_date)
 		aelf_unescape(lectures_link,'2_Lectures.html')
-		tierce_link = "http://www.aelf.org/office-tierce?desktop=1&date_my=%s" % (site_date)
+		tierce_link = "http://www.aelf.org/%s/romain/tierce" % (site_date)
 		aelf_unescape(tierce_link,'3_Tierce.html')
-		sexte_link = "http://www.aelf.org/office-sexte?desktop=1&date_my=%s" % (site_date)
+		sexte_link = "http://www.aelf.org/%s/romain/sexte" % (site_date)
 		aelf_unescape(sexte_link,'4_Sexte.html')
-		none_link = "http://www.aelf.org/office-none?desktop=1&date_my=%s" % (site_date)
+		none_link = "http://www.aelf.org/%s/romain/none" % (site_date)
 		aelf_unescape(none_link,'5_None.html')
-		vepres_link = "http://www.aelf.org/office-vepres?desktop=1&date_my=%s" % (site_date)
+		vepres_link = "http://www.aelf.org/%s/romain/vepres" % (site_date)
 		aelf_unescape(vepres_link,'6_Vepres.html')
-		complies_link = "http://www.aelf.org/office-complies?desktop=1&date_my=%s" % (site_date)
+		complies_link = "http://www.aelf.org/%s/romain/complies" % (site_date)
 		aelf_unescape(complies_link,'7_Complies.html')
 		try: 
 			request=urllib.request.Request(next_link,None,headers) #The assembled request
@@ -80,13 +80,11 @@ for i in range(1, 57):
 			print(e.reason)
 		#Extract ordo and create day index file
 		soup = BeautifulSoup(html_doc, "lxml")
-		ordo_text = soup.find("div", {"class": "bloc"})
+		ordo_text = soup.find("div", {"class": "heading-day"})
 		text_file = open("index.html", "w", encoding='utf-8')
-		for hidden in ordo_text.find_all("div", {"class": "date"}):
+		for hidden in ordo_text.find_all("div", {"class": ['btn btn-default btn-aelf btn-red m-t-10', 'btn btn-default btn-aelf myDatePicker', 'dropdown m-t-10', 'block-buttons-navigation only-tablet m-t-10']}):
 				hidden.decompose()
-		for hidden in ordo_text.find_all('img'):
-				hidden.decompose()
-		for hidden in ordo_text.find_all(id='maBulle'):
+		for hidden in ordo_text.find_all("a", {"class": ['btn btn-default btn-aelf myDatePicker', 'btn btn-default btn-aelf btn-red m-t-10']}):
 				hidden.decompose()
 		part1 = """
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -135,25 +133,12 @@ for i in range(1, 57):
 							if not h2:
 								break
 							h2.name = 'h3'
-						for remove in soup.find_all(attrs={'class':['clr', 'goTop', 'print_only', 'change_country', 'abonnement', 'current', 'bloc', 'degre', 'base']}):
+						for remove in soup.find_all(attrs={'class':['menu-secondary-mobile', 'span-img', 'sidebar-nav', 'col-sm-5 text-right', 'block-summary', 'block-buttons-navigation pull-right', 'container-toolbar', 'col-sm-3 col-md-2', 'col-sm-7']}):
 								remove.decompose()
-						for remove in soup.find_all(id=['bas', 'menuHorizontal', 'colonneDroite', 'colonneGauche', 'font-resize', 'print_link', 'titre']):
+						for remove in soup.find_all(id=['header_background', 'menu-mobile']):
 								remove.decompose()
 						for remove in soup.find_all('script'):
 								remove.decompose()
-						for remove in soup.find_all('link', attrs={'rel':'shortcut icon'}):
-								remove.decompose()
-						for remove in soup.find_all('link', attrs={'rel':'rss feed'}):
-								remove.decompose()
-						for tag in soup.find_all('font', attrs={'size':'2'}):
-							del tag['size']
-						for tag in soup.find_all('font', attrs={'size':'1'}):
-							del tag['size']
-						for tag in soup.find_all('font', attrs={'color':'#FF0000'}):
-							tag['size'] = "1"
-							tag.insert(len(tag.contents), """ """)
-						for tag in soup.find_all('font'):
-							del tag['face']
 						cleaned = str(soup)
 						with_retour = re.sub(r'</body>', r'<div style="text-align: center; font-size:130%; line-height:150%"><a href="index.html">Retour</a></div></body>', cleaned)
 						with_retour = re.sub(r'(</br>){2,}', r'\n <p>&nbsp;</p> \n', with_retour) #Remove extra blank lines
