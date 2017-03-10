@@ -119,7 +119,7 @@ for i in range(1, 57):
 			part5 = "&nbsp;&nbsp;<a href=\"../" + str(r'%s-%s-%s' % (demain.strftime("%y"), demain.strftime("%m"), demain.strftime("%d"))) + "/index.html\">Jour+</a></div></body>"
 		else:
 			part5 = "</div></body></html>"
-		joined = "%s<h2>%s</h2>%s%s%s%s" % (part1, site_date, ordo_text, part3, part4, part5)
+		joined = "%s%s%s%s%s" % (part1, ordo_text, part3, part4, part5)
 		text_file.write(joined)
 		text_file.close()
 		#Clean pages
