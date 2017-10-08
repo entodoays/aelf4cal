@@ -18,9 +18,9 @@ if now.weekday() != 6:
 else:
 	idx = 0
 Base_date = now - datetime.timedelta(idx) #Get last Sunday's date
-print('Création du dossier %s sur le Bureau\nLe programme téléchargera les textes pour 8 semaines.\nÀ la fin, ajoutez le ficher index.html en Calibre.\n' % Base_folder)
+print('Création du dossier %s sur le Bureau\nLe programme téléchargera les textes pour 4 semaines.\nÀ la fin, ajoutez le ficher index.html en Calibre.\n' % Base_folder)
 next_date = Base_date
-user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.75 Safari/537.36'
+user_agent = 'Mozilla/5.0 (X11; Linux x86_64; rv:56.0) Gecko/20100101 Firefox/56.0'
 headers={'User-Agent':user_agent,} 
 main_index = """
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -48,8 +48,8 @@ def aelf_unescape(link,filename):
 		except urllib.error.URLError as e:
 			print(e.reason)
 		return
-#Download the files for 8 weeks
-for i in range(1, 57):   
+#Download the files for 4 weeks
+for i in range(1, 29):   
 		print ('Téléchargement des textes de %s-%s-%s...' % (next_date.strftime("%d"), next_date.strftime("%m"), next_date.strftime("%y")))
 		next_folder = r'%s-%s-%s' % (next_date.strftime("%y"), next_date.strftime("%m"), next_date.strftime("%d"))
 		if not os.path.exists(next_folder): os.makedirs(next_folder)
@@ -142,6 +142,7 @@ for i in range(1, 57):
 						cleaned = str(soup)
 						with_retour = re.sub(r'</body>', r'<div style="text-align: center; font-size:130%; line-height:150%"><a href="index.html">Retour</a></div></body>', cleaned)
 						with_retour = re.sub(r'(</br>){2,}', r'\n <p>&nbsp;</p> \n', with_retour) #Remove extra blank lines
+						with_retour = re.sub(r'</br/>\s?</br/>', r'\n <p>&nbsp;</p> \n', with_retour) #replace <br> <br> with empty paragraphs
 						output_file = open(filename, "w", encoding='utf-8')
 						output_file.write(with_retour)
 		# Go to parent folder and add 1 day
