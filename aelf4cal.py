@@ -133,9 +133,9 @@ for i in range(1, 29):
 							if not h2:
 								break
 							h2.name = 'h3'
-						for remove in soup.find_all(attrs={'class':['menu-secondary-mobile', 'span-img', 'sidebar-nav', 'col-sm-5 text-right', 'block-summary', 'block-buttons-navigation pull-right', 'container-toolbar', 'col-sm-3 col-md-2', 'col-sm-7']}):
+						for remove in soup.find_all(attrs={'class':['menu-secondary-mobile', 'col-sm-3 col-md-2', 'col-sm-5 col-md-5', 'col-sm-7', 'col-sm-9 col-md-5', 'container-toolbar']}):
 								remove.decompose()
-						for remove in soup.find_all(id=['header_background', 'menu-mobile']):
+						for remove in soup.find_all(id=['middle-col', 'toolbar', 'menu-mobile', 'header']):
 								remove.decompose()
 						for remove in soup.find_all('script'):
 								remove.decompose()
